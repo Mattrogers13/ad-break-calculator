@@ -893,6 +893,7 @@
             const validation = validateBreaks();
             const initializedBreaks = validation.filter(v => v.seconds > 0);
             const allValid = initializedBreaks.length === 0 || initializedBreaks.every(v => v.valid);
+            const placedBreaks = validation.filter(v => v.seconds > 0);
 
             document.getElementById('timelineInfo').textContent =
                 `00:00:00;00 — ${secondsToTimecode(endSeconds)}`;
@@ -918,7 +919,7 @@
             });
 
             // Add gap visualization
-            const placedBreaks = validation.filter(v => v.seconds > 0);
+            // placedBreaks already declared at top of render function
             if (placedBreaks.length > 0) {
                 // Create a style for gaps if not already there
                 if (!document.getElementById('timeline-gap-styles')) {
@@ -1032,8 +1033,6 @@
             });
 
             const validBreaks = validation.filter(v => v.seconds > 0 && v.valid);
-            // placedBreaks already declared above in gap visualization section
-            // Reuse it here for summary stats
             const avgSpacing = placedBreaks.length > 1
                 ? (endSeconds - LAST_BREAK_BUFFER) / placedBreaks.length
                 : 0;
