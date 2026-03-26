@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Break Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-secondary: #121829;
+            --bg-tertiary: #1a1f3a;
+            --text-primary: #e8eaf6;
+            --text-secondary: #9fa8da;
+            --accent-green: #4ade80;
+            --accent-red: #ff6b6b;
+            --accent-yellow: #fbbf24;
+            --accent-blue: #60a5fa;
+            --border-color: #2d3142;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Controls Section */
+        .controls-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 0;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            align-items: flex-end;
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        input[type="text"],
+        select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.65rem 0.8rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 8px rgba(96, 165, 250, 0.2);
+        }
+
+        button {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #3b82f6;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .timecode-hint {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            text-transform: none;
+            letter-spacing: normal;
+            opacity: 0.7;
+        }
+
+        /* Timeline Section */
+        .timeline-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .timeline {
+            position: relative;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timeline-bar {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            width: 0%;
+            opacity: 0.1;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 30px;
+            opacity: 0.3;
+            cursor: pointer;
+        }
+
+        .timeline-marker.active {
+            opacity: 1;
+        }
+
+        .timeline-marker.valid {
+            background: var(--accent-green);
+        }
+
+        .timeline-marker.invalid {
+            background: var(--accent-red);
+        }
+
+        .timeline-marker.last-boundary {
+            background: var(--accent-yellow);
+            opacity: 0.5;
+        }
+
+        .timeline-label {
+            position: absolute;
+            top: -25px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            transform: translateX(-50%);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Summary Section (moved above breaks) */
+        .summary-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            font-family: 'Courier New', monospace;
+            margin-bottom: 0.4rem;
+        }
+
+        .summary-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        /* Ad Breaks Grid */
+        .breaks-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .breaks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .breaks-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .break-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .break-card.valid {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.1);
+        }
+
+        .break-card.invalid {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 12px rgba(255, 107, 107, 0.1);
+        }
+
+        .break-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .break-title {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .break-number {
+            font-size: 1.1rem;
+            opacity: 0.6;
+        }
+
+        .spacing-badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 10px;
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--accent-green);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .spacing-badge.invalid {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--accent-red);
+        }
+
+        .lock-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.35rem 0.5rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: border-color 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .lock-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .lock-btn.locked {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .break-input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .break-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .break-input label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        .break-input input[type="text"] {
+            width: 100%;
+            text-align: center;
+            letter-spacing: 2px;
+            font-size: 1rem;
+            padding: 0.6rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 4px;
+        }
+
+        .copy-btn {
+            background: var(--accent-green);
+            color: #000;
+            font-weight: 600;
+            padding: 0.6rem 0.75rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .copy-btn:hover {
+            background: #22c55e;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .controls-section,
+            .timeline-section,
+            .breaks-section,
+            .summary-section {
+                padding: 1rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .break-card {
+                padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .summary-value {
+                font-size: 1rem;
+            }
+
+            .summary-label {
+                font-size: 0.65rem;
+            }
+
+            button {
+                padding: 0.5rem 0.85rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            .controls-section,
+            .timeline-section,
+            .breaks-section,
+            .summary-section {
+                padding: 0.75rem;
+                margin-bottom: 1rem;
+                border-radius: 4px;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+                gap: 0.4rem;
+            }
+
+            input[type="text"],
+            select {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .break-card {
+                padding: 0.75rem;
+                gap: 0.4rem;
+            }
+
+            .break-input-row {
+                gap: 0.35rem;
+            }
+
+            button {
+                padding: 0.45rem 0.7rem;
+                font-size: 0.75rem;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .timeline {
+                height: 30px;
+            }
+
+            .timeline-marker {
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ad Break Calculator</h1>
+            <p>Professional timecode placement for TV/streaming video</p>
+        </header>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <div class="input-group">
+                <label>
+                    Show Duration
+                    <input type="text" id="endTime" placeholder="01:00:00;00" value="01:00:00;00">
+                    <span class="timecode-hint">HH:MM:SS;FF</span>
+                </label>
+                <label>
+                    Strategy
+                    <select id="strategySelect">
+                        <option value="redistribute">Redistribute</option>
+                        <option value="snap">Snap</option>
+                        <option value="preserve">Preserve</option>
+                    </select>
+                </label>
+                <button onclick="autoSuggest()">Auto-Suggest</button>
+                <button id="undoBtn" onclick="undo()">↶ Undo</button>
+                <button id="redoBtn" onclick="redo()">↷ Redo</button>
+                <button onclick="resetCalculator()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Timeline Visualization -->
+        <div class="timeline-section">
+            <div class="timeline-header">
+                <span>Timeline</span>
+                <span id="timelineInfo">00:00:00;00 — 01:00:00;00</span>
+            </div>
+            <div class="timeline" id="timeline">
+                <div class="timeline-bar" id="timelineBar"></div>
+            </div>
+        </div>
+
+        <!-- Summary (moved before breaks) -->
+        <div class="summary-section">
+            <div class="summary-grid" id="summary"></div>
+        </div>
+
+        <!-- Ad Breaks -->
+        <div class="breaks-section">
+            <div class="breaks-header">
+                <span>Ad Breaks</span>
+                <span id="allValidStatus" class="status-badge valid" style="padding: 0.3rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; background: rgba(74, 222, 128, 0.2); color: var(--accent-green);">All Valid</span>
+            </div>
+            <div class="breaks-grid" id="breaksGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        const NUM_BREAKS = 5;
+        const MIN_SPACING = 360;
+        const MAX_SPACING = 600;
+        const LAST_BREAK_BUFFER = 180;
+        const FRAME_RATE = 29.97;
+
+        let breaks = Array(NUM_BREAKS).fill(null).map(() => ({
+            seconds: 0,
+            frames: 0,
+            locked: false,
+            initialized: false
+        }));
+
+        let history = [];
+        let historyIndex = -1;
+
+        function saveToHistory() {
+            history = history.slice(0, historyIndex + 1);
+            history.push({
+                breaks: JSON.parse(JSON.stringify(breaks)),
+                endTime: document.getElementById('endTime').value
+            });
+            historyIndex++;
+            updateHistoryButtons();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const state = history[historyIndex];
+                breaks = JSON.parse(JSON.stringify(state.breaks));
+                document.getElementById('endTime').value = state.endTime;
+                updateHistoryButtons();
+                render();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                const state = history[historyIndex];
+                breaks = JSON.parse(JSON.stringify(state.breaks));
+                document.getElementById('endTime').value = state.endTime;
+                updateHistoryButtons();
+                render();
+            }
+        }
+
+        function updateHistoryButtons() {
+            document.getElementById('undoBtn').disabled = historyIndex <= 0;
+            document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
+        }
+
+        function timecodeToFrames(timecodeStr) {
+            const match = timecodeStr.match(/^(\d{2}):(\d{2}):(\d{2})[;:](\d{2})$/);
+            if (!match) return 0;
+            let [, h, m, s, f] = match.map(Number);
+            if (h > 23 || m > 59 || s > 59 || f > 29) return 0;
+            const totalSeconds = h * 3600 + m * 60 + s;
+            const totalFrames = Math.round(totalSeconds * FRAME_RATE) + f;
+            return totalFrames;
+        }
+
+        function framesToTimecode(frames) {
+            const totalSeconds = Math.floor(frames / FRAME_RATE);
+            const remainingFrames = Math.round(frames - totalSeconds * FRAME_RATE);
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            const f = Math.max(0, Math.min(remainingFrames % 30, 29));
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')};${String(f).padStart(2, '0')}`;
+        }
+
+        function timecodeToSeconds(timecodeStr) {
+            const frames = timecodeToFrames(timecodeStr);
+            return frames / FRAME_RATE;
+        }
+
+        function secondsToTimecode(seconds) {
+            const frames = Math.round(seconds * FRAME_RATE);
+            return framesToTimecode(frames);
+        }
+
+        function getEndSeconds() {
+            const endTimeStr = document.getElementById('endTime').value || '01:00:00;00';
+            if (!/^\d{2}:\d{2}:\d{2}[;:]\d{2}$/.test(endTimeStr)) {
+                document.getElementById('endTime').value = '01:00:00;00';
+                return 3600;
+            }
+            const seconds = timecodeToSeconds(endTimeStr);
+            if (seconds <= LAST_BREAK_BUFFER) {
+                document.getElementById('endTime').value = '01:00:00;00';
+                return 3600;
+            }
+            const maxTime = secondsToTimecode(86400 - LAST_BREAK_BUFFER);
+            if (seconds > 86400 - LAST_BREAK_BUFFER) {
+                document.getElementById('endTime').value = maxTime;
+                return 86400 - LAST_BREAK_BUFFER;
+            }
+            return seconds;
+        }
+
+        function autoSuggest() {
+            saveToHistory();
+            const strategy = document.getElementById('strategySelect').value;
+            const endSeconds = getEndSeconds();
+            if (strategy === 'redistribute') {
+                autoSuggestRedistribute(endSeconds);
+            } else if (strategy === 'snap') {
+                autoSuggestSnap(endSeconds);
+            } else if (strategy === 'preserve') {
+                autoSuggestPreserve(endSeconds);
+            }
+            render();
+        }
+
+        function autoSuggestRedistribute(endSeconds) {
+            const locked = breaks.map((b, i) => ({ index: i, ...b })).filter(b => b.locked && b.seconds > 0);
+            const unlocked = breaks.map((b, i) => ({ index: i, ...b })).filter(b => !b.locked && b.seconds > 0);
+
+            if (locked.length === 0) {
+                const availableTime = endSeconds - LAST_BREAK_BUFFER;
+                const interval = availableTime / (NUM_BREAKS + 1);
+                for (let i = 0; i < NUM_BREAKS; i++) {
+                    const seconds = interval * (i + 1);
+                    breaks[i].seconds = seconds;
+                    breaks[i].frames = Math.round(seconds * FRAME_RATE);
+                    breaks[i].initialized = true;
+                }
+                return;
+            }
+
+            if (unlocked.length === 0) return;
+
+            const segments = [];
+            let lastPos = 0;
+            let lastLockIndex = -1;
+
+            locked.forEach(lock => {
+                if (lock.index > lastLockIndex + 1) {
+                    segments.push({
+                        start: lastPos,
+                        end: lock.seconds,
+                        unlocked: unlocked.map(u => u.index).filter(i => i > lastLockIndex && i < lock.index)
+                    });
+                }
+                lastPos = lock.seconds;
+                lastLockIndex = lock.index;
+            });
+
+            if (lastLockIndex < NUM_BREAKS - 1) {
+                segments.push({
+                    start: lastPos,
+                    end: endSeconds - LAST_BREAK_BUFFER,
+                    unlocked: unlocked.map(u => u.index).filter(i => i > lastLockIndex)
+                });
+            }
+
+            segments.forEach(seg => {
+                if (seg.unlocked.length > 0) {
+                    const available = seg.end - seg.start;
+                    const interval = available / (seg.unlocked.length + 1);
+                    seg.unlocked.forEach((idx, pos) => {
+                        breaks[idx].seconds = seg.start + interval * (pos + 1);
+                        breaks[idx].frames = Math.round(breaks[idx].seconds * FRAME_RATE);
+                        breaks[idx].initialized = true;
+                    });
+                }
+            });
+        }
+
+        function autoSuggestSnap(endSeconds) {
+            for (let i = 0; i < NUM_BREAKS; i++) {
+                if (breaks[i].locked || breaks[i].seconds > 0) continue;
+                let candidateSeconds = (endSeconds - LAST_BREAK_BUFFER) / (NUM_BREAKS + 1) * (i + 1);
+                for (let offset = 0; offset <= 300; offset += 10) {
+                    for (let sign of [1, -1]) {
+                        const testSeconds = candidateSeconds + (offset * sign);
+                        if (testSeconds <= 0 || testSeconds >= endSeconds - LAST_BREAK_BUFFER) continue;
+                        const testBreak = { seconds: testSeconds, frames: Math.round(testSeconds * FRAME_RATE) };
+                        const testBreaks = [...breaks.slice(0, i), testBreak, ...breaks.slice(i + 1)];
+                        let valid = true;
+                        if (i > 0 && testBreaks[i - 1].seconds > 0 && testSeconds - testBreaks[i - 1].seconds < MIN_SPACING) {
+                            valid = false;
+                        }
+                        if (i < NUM_BREAKS - 1 && testBreaks[i + 1].seconds > 0 && testBreaks[i + 1].seconds - testSeconds < MIN_SPACING) {
+                            valid = false;
+                        }
+                        if (valid) {
+                            breaks[i].seconds = testSeconds;
+                            breaks[i].frames = Math.round(testSeconds * FRAME_RATE);
+                            breaks[i].initialized = true;
+                            break;
+                        }
+                    }
+                    if (breaks[i].seconds > 0) break;
+                }
+            }
+        }
+
+        function autoSuggestPreserve(endSeconds) {
+            const uninitialized = breaks.map((b, i) => i).filter(i => breaks[i].seconds === 0 && !breaks[i].locked);
+            uninitialized.forEach(i => {
+                let leftBound = 0;
+                let rightBound = endSeconds - LAST_BREAK_BUFFER;
+                for (let j = i - 1; j >= 0; j--) {
+                    if (breaks[j].seconds > 0) {
+                        leftBound = breaks[j].seconds + MIN_SPACING;
+                        break;
+                    }
+                }
+                for (let j = i + 1; j < NUM_BREAKS; j++) {
+                    if (breaks[j].seconds > 0) {
+                        rightBound = breaks[j].seconds - MIN_SPACING;
+                        break;
+                    }
+                }
+                if (rightBound > leftBound) {
+                    breaks[i].seconds = (leftBound + rightBound) / 2;
+                    breaks[i].frames = Math.round(breaks[i].seconds * FRAME_RATE);
+                    breaks[i].initialized = true;
+                }
+            });
+        }
+
+        function updateBreak(index, timecodeStr) {
+            saveToHistory();
+            const frames = timecodeToFrames(timecodeStr);
+            const seconds = frames / FRAME_RATE;
+            const endSeconds = getEndSeconds();
+            if (frames === 0) {
+                breaks[index].seconds = 0;
+                breaks[index].frames = 0;
+                breaks[index].initialized = false;
+            } else if (seconds > 0 && seconds < endSeconds - LAST_BREAK_BUFFER) {
+                breaks[index].seconds = seconds;
+                breaks[index].frames = frames;
+                breaks[index].initialized = true;
+            }
+            render();
+        }
+
+        function toggleLock(index) {
+            saveToHistory();
+            breaks[index].locked = !breaks[index].locked;
+            render();
+        }
+
+        function copyTimecode(index) {
+            const timecode = framesToTimecode(breaks[index].frames);
+            navigator.clipboard.writeText(timecode).catch(() => {
+                alert(`Timecode: ${timecode}`);
+            });
+        }
+
+        function resetCalculator() {
+            saveToHistory();
+            breaks = Array(NUM_BREAKS).fill(null).map(() => ({
+                seconds: 0,
+                frames: 0,
+                locked: false,
+                initialized: false
+            }));
+            document.getElementById('endTime').value = '01:00:00;00';
+            render();
+        }
+
+        function validateBreaks() {
+            const endSeconds = getEndSeconds();
+            const validation = breaks.map((br, i) => {
+                if (br.seconds === 0) {
+                    return {
+                        ...br,
+                        valid: true,
+                        spacingValid: true,
+                        spacing: 0,
+                        details: { initialized: false }
+                    };
+                }
+                let outOfOrder = false;
+                if (i > 0 && br.seconds > 0 && breaks[i - 1].seconds > 0) {
+                    outOfOrder = br.seconds <= breaks[i - 1].seconds;
+                }
+                const isValid = {
+                    withinBounds: br.seconds > 0 && br.seconds < endSeconds - LAST_BREAK_BUFFER,
+                    spacingPrev: i === 0 || (breaks[i - 1].seconds === 0 || (br.seconds - breaks[i - 1].seconds >= MIN_SPACING)),
+                    spacingNext: i === NUM_BREAKS - 1 || (breaks[i + 1].seconds === 0 || (breaks[i + 1].seconds - br.seconds >= MIN_SPACING)),
+                    lastBreakBuffer: i !== NUM_BREAKS - 1 || (br.seconds <= endSeconds - LAST_BREAK_BUFFER),
+                    inOrder: !outOfOrder
+                };
+                const valid = Object.values(isValid).every(v => v);
+                const spacing = i > 0 && br.seconds > 0 && breaks[i - 1].seconds > 0 ? br.seconds - breaks[i - 1].seconds : 0;
+                const spacingValid = i === 0 || spacing === 0 || (spacing >= MIN_SPACING && spacing <= MAX_SPACING);
+                return {
+                    ...br,
+                    valid,
+                    spacingValid,
+                    spacing,
+                    details: isValid
+                };
+            });
+            return validation;
+        }
+
+        function render() {
+            const endSeconds = getEndSeconds();
+            const validation = validateBreaks();
+            const initializedBreaks = validation.filter(v => v.seconds > 0);
+            const allValid = initializedBreaks.length === 0 || initializedBreaks.every(v => v.valid);
+
+            document.getElementById('timelineInfo').textContent =
+                `00:00:00;00 — ${secondsToTimecode(endSeconds)}`;
+
+            const timeline = document.getElementById('timeline');
+            timeline.querySelectorAll('.timeline-marker, .timeline-label').forEach(el => el.remove());
+
+            validation.forEach((br, i) => {
+                if (br.seconds > 0) {
+                    const percent = (br.seconds / endSeconds) * 100;
+                    const marker = document.createElement('div');
+                    marker.className = `timeline-marker active ${br.valid ? 'valid' : 'invalid'}`;
+                    marker.style.left = `${percent}%`;
+                    timeline.appendChild(marker);
+                    const label = document.createElement('div');
+                    label.className = 'timeline-label';
+                    label.textContent = `B${i + 1}`;
+                    label.style.left = `${percent}%`;
+                    timeline.appendChild(label);
+                }
+            });
+
+            const lastBoundaryPercent = ((endSeconds - LAST_BREAK_BUFFER) / endSeconds) * 100;
+            const boundaryMarker = document.createElement('div');
+            boundaryMarker.className = 'timeline-marker last-boundary';
+            boundaryMarker.style.left = `${lastBoundaryPercent}%`;
+            timeline.appendChild(boundaryMarker);
+
+            const breaksGrid = document.getElementById('breaksGrid');
+            breaksGrid.innerHTML = '';
+
+            validation.forEach((br, i) => {
+                const card = document.createElement('div');
+                card.className = `break-card ${br.valid ? 'valid' : 'invalid'}`;
+                const timecodeDisplay = br.seconds > 0 ? framesToTimecode(br.frames) : '—';
+                const spacingDisplay = br.spacing > 0 ? secondsToTimecode(br.spacing) : '—';
+
+                card.innerHTML = `
+                    <div class="break-header">
+                        <div class="break-title">
+                            <span class="break-number">B${i + 1}</span>
+                            <button class="lock-btn ${br.locked ? 'locked' : ''}" onclick="toggleLock(${i})">
+                                ${br.locked ? '🔒' : '🔓'}
+                            </button>
+                        </div>
+                        <div class="spacing-badge ${!br.spacingValid ? 'invalid' : ''}">
+                            ${br.seconds > 0 ? `${br.spacingValid ? '✓' : '✗'} ${spacingDisplay}` : '—'}
+                        </div>
+                    </div>
+
+                    <div class="break-input-row">
+                        <div class="break-input">
+                            <label>Timecode</label>
+                            <input type="text" placeholder="HH:MM:SS;FF" value="${timecodeDisplay}"
+                                   onchange="if(this.value !== '—') updateBreak(${i}, this.value); else this.value = '${timecodeDisplay}';">
+                        </div>
+                        <button class="copy-btn" onclick="copyTimecode(${i})">📋</button>
+                    </div>
+                `;
+
+                breaksGrid.appendChild(card);
+            });
+
+            const validBreaks = validation.filter(v => v.seconds > 0 && v.valid);
+            const placedBreaks = validation.filter(v => v.seconds > 0);
+            const avgSpacing = placedBreaks.length > 1
+                ? (endSeconds - LAST_BREAK_BUFFER) / placedBreaks.length
+                : 0;
+            const lastBreakSeconds = placedBreaks.length > 0 ? placedBreaks[placedBreaks.length - 1].seconds : 0;
+
+            document.getElementById('allValidStatus').style.background = allValid ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 107, 107, 0.2)';
+            document.getElementById('allValidStatus').style.color = allValid ? 'var(--accent-green)' : 'var(--accent-red)';
+            document.getElementById('allValidStatus').textContent = allValid ? 'All Valid' : 'Issues Found';
+
+            document.getElementById('summary').innerHTML = `
+                <div class="summary-item">
+                    <div class="summary-value">${placedBreaks.length}</div>
+                    <div class="summary-label">Placed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${validBreaks.length}</div>
+                    <div class="summary-label">Valid</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${validBreaks.length > 0 ? secondsToTimecode(avgSpacing) : '—'}</div>
+                    <div class="summary-label">Avg Spacing</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">${lastBreakSeconds > 0 ? secondsToTimecode(lastBreakSeconds) : '—'}</div>
+                    <div class="summary-label">Last Break</div>
+                </div>
+            `;
+        }
+
+        document.getElementById('endTime').addEventListener('change', () => {
+            saveToHistory();
+            render();
+        });
+        document.getElementById('endTime').addEventListener('input', render);
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                undo();
+            }
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'z'))) {
+                e.preventDefault();
+                redo();
+            }
+        });
+
+        autoSuggest();
+        history = [{
+            breaks: JSON.parse(JSON.stringify(breaks)),
+            endTime: document.getElementById('endTime').value
+        }];
+        historyIndex = 0;
+        updateHistoryButtons();
+    </script>
+</body>
+</html>
