@@ -34,28 +34,178 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 480px;
             margin: 0 auto;
         }
 
         header {
-            margin-bottom: 2rem;
-            text-align: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
             background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-green) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            white-space: nowrap;
         }
 
-        p {
+        .header-subtitle {
             color: var(--text-secondary);
+            font-size: 0.75rem;
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .help-btn {
+            margin-left: 0.25rem;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .help-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            background: transparent;
+        }
+
+        /* Help Modal */
+        .help-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .help-overlay.open {
+            display: flex;
+        }
+        .help-modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+        }
+        .help-modal h2 {
             font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            letter-spacing: 0.3px;
+        }
+        .help-modal ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .help-modal li {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: grid;
+            grid-template-columns: 22px 1fr;
+            gap: 0.5rem;
+            align-items: start;
+        }
+        .help-modal li .help-icon {
+            color: var(--accent-blue);
+            font-style: normal;
+            text-align: center;
+            padding-top: 0.05rem;
+        }
+        .help-modal .help-close {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.25rem 0.4rem;
+            line-height: 1;
+        }
+        .help-modal .help-close:hover {
+            color: var(--text-primary);
+            background: transparent;
+        }
+        .help-divider {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 0.85rem 0;
+        }
+
+        /* Nested example tooltips */
+        .help-tip {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: var(--accent-blue);
+            border-bottom: 1px dotted var(--accent-blue);
+            cursor: help;
+            position: relative;
+            margin-left: 0.3rem;
+        }
+        .help-tip::after {
+            content: attr(data-tip);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0d1230;
+            border: 1px solid var(--accent-blue);
+            color: var(--text-primary);
+            font-size: 0.78rem;
+            line-height: 1.6;
+            padding: 0.65rem 0.85rem;
+            border-radius: 6px;
+            white-space: normal;
+            width: 260px;
+            pointer-events: none;
+            visibility: hidden;
+            z-index: 300;
+            box-shadow: 0 8px 24px #000;
+        }
+        .help-tip:hover::after,
+        .help-tip:focus::after {
+            visibility: visible;
+        }
+        .help-section-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+        .help-modal strong {
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
         /* Controls Section */
@@ -67,21 +217,55 @@
             margin-bottom: 1.5rem;
         }
 
-        .input-group {
+        .controls-row-primary {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 0.75rem;
-            align-items: flex-end;
+        }
+
+        .controls-row-secondary {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
         }
 
         .controls-section label {
-            flex: 0 0 auto;
-            min-width: 150px;
+            width: 100%;
         }
 
-        .input-group button {
-            flex: 0 0 auto;
-            align-self: flex-end;
+        .label-duration,
+        .label-strategy {
+            width: 100%;
+        }
+
+        .btn-calculate {
+            width: 100%;
+            background: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 107, 107, 0.1);
         }
 
         label {
@@ -183,7 +367,7 @@
 
         .timeline {
             position: relative;
-            height: 40px;
+            height: 70px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: 4px;
@@ -280,14 +464,83 @@
 
         .breaks-header {
             display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .breaks-header-row1 {
+            display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.25rem;
+        }
+
+        .breaks-header-title {
             color: var(--text-secondary);
             font-size: 0.8rem;
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.4px;
+        }
+
+        .breaks-header-row2 {
+            display: flex;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .breaks-action-btn {
+            font-size: 0.72rem;
+            padding: 0.3rem 0.7rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .breaks-action-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .status-pill::before {
+            content: '';
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-pill.valid {
+            background: rgba(74, 222, 128, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+        }
+
+        .status-pill.valid::before {
+            background: var(--accent-green);
+        }
+
+        .status-pill.invalid {
+            background: transparent;
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .status-pill.invalid::before {
+            background: var(--accent-red);
         }
 
         .breaks-grid {
@@ -425,7 +678,7 @@
         }
 
         /* Mobile Responsive */
-        @media (max-width: 768px) {
+        @media (max-width: 640px) {
             body {
                 padding: 1rem 0.5rem;
             }
@@ -435,7 +688,11 @@
             }
 
             h1 {
-                font-size: 1.5rem;
+                font-size: 1rem;
+            }
+
+            .header-subtitle {
+                font-size: 0.65rem;
             }
 
             .controls-section,
@@ -446,9 +703,43 @@
                 margin-bottom: 1.25rem;
             }
 
-            .input-group {
-                grid-template-columns: 1fr;
+            .controls-row-primary {
+                flex-direction: column;
+                align-items: stretch;
                 gap: 0.5rem;
+                width: 100%;
+            }
+
+            .controls-row-primary label,
+            .label-duration,
+            .label-strategy {
+                flex: 1 1 100% !important;
+                min-width: 0 !important;
+                width: 100% !important;
+                align-self: stretch;
+                text-align: left;
+            }
+
+            .controls-row-primary label span,
+            .controls-row-primary label input,
+            .controls-row-primary label select {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .btn-calculate {
+                width: 100%;
+            }
+
+            .controls-row-secondary {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 0.5rem;
+            }
+
+            .controls-row-secondary button {
+                width: 100%;
+                justify-content: center;
             }
 
             .break-card {
@@ -481,7 +772,7 @@
             }
 
             h1 {
-                font-size: 1.25rem;
+                font-size: 0.95rem;
             }
 
             .controls-section,
@@ -493,8 +784,8 @@
                 border-radius: 4px;
             }
 
-            .input-group {
-                grid-template-columns: 1fr;
+            .controls-row-primary {
+                flex-direction: column;
                 gap: 0.4rem;
             }
 
@@ -524,7 +815,7 @@
             }
 
             .timeline {
-                height: 30px;
+                height: 50px;
             }
 
             .timeline-marker {
@@ -536,19 +827,58 @@
 <body>
     <div class="container">
         <header>
-            <h1>Ad Break Calculator</h1>
-            <p>Professional timecode placement for TV/streaming video</p>
+            <div class="header-inner">
+                <h1>Ad Break Calculator</h1>
+                <span class="header-subtitle">29.97fps drop-frame &middot; 5 breaks &middot; 6&ndash;10 min spacing</span>
+                <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')" title="Help">?</button>
+            </div>
         </header>
+
+        <!-- Help Modal -->
+        <div class="help-overlay" id="helpOverlay" onclick="if(event.target===this)this.classList.remove('open')">
+            <div class="help-modal">
+                <button class="help-close" onclick="document.getElementById('helpOverlay').classList.remove('open')">✕</button>
+                <h2>How to use Ad Break Calculator</h2>
+
+                <p class="help-section-title">Getting Started</p>
+                <ul>
+                    <li><i class="help-icon">⏱</i><span>Enter your show's total run time in <strong>Show Duration</strong> using HH:MM:SS;FF format. You can also type bare digits and it will auto-format on Tab or Enter. For example, typing <strong>4512000</strong> becomes <strong>00:45:12;00</strong>.</span></li>
+                    <li><i class="help-icon">⚡</i><span>Choose a <strong>Strategy</strong> and click <strong>Calculate Breaks</strong>:
+                        <ul style="margin-top:0.4rem; padding-left:0.25rem; display:flex; flex-direction:column; gap:0.3rem;">
+                            <li style="display:grid; grid-template-columns:16px 1fr; gap:0.4rem;"><i style="text-align:center;opacity:0.5;">•</i><span><strong>Redistribute</strong> discards all current positions and spaces every unlocked break evenly from scratch. <span class="help-tip" data-tip="60-min show with 5 breaks: all previous positions are cleared and breaks are placed fresh at 9:30, 19:00, 28:30, 38:00, and 47:30." tabindex="0">example</span></span></li>
+                            <li style="display:grid; grid-template-columns:16px 1fr; gap:0.4rem;"><i style="text-align:center;opacity:0.5;">•</i><span><strong>Snap</strong> keeps each break close to where it is but nudges it to the nearest position that satisfies the 6 to 10 minute spacing rule. <span class="help-tip" data-tip="Break 2 is sitting at 8:45, which puts it only 5:45 from Break 1. Snap moves it forward to 9:00 to meet the 6-minute minimum, without touching any other break." tabindex="0">example</span></span></li>
+                            <li style="display:grid; grid-template-columns:16px 1fr; gap:0.4rem;"><i style="text-align:center;opacity:0.5;">•</i><span><strong>Preserve</strong> leaves every placed break exactly where it is and only fills in the empty slots around them. <span class="help-tip" data-tip="You've manually placed Breaks 1 and 3. Preserve leaves those untouched and drops Breaks 2, 4, and 5 into the open gaps in between and after." tabindex="0">example</span></span></li>
+                        </ul>
+                    </span></li>
+                </ul>
+
+                <hr class="help-divider">
+                <p class="help-section-title">Working with Breaks</p>
+                <ul>
+                    <li><i class="help-icon">✏️</i><span>Click any timecode to edit it directly. Bare digit entry works here too.</span></li>
+                    <li><i class="help-icon">🔒</i><span><strong>Lock</strong> a break to pin it in place. Locked breaks are skipped during recalculation, so you can anchor one position and freely adjust everything else around it.</span></li>
+                    <li><i class="help-icon">📋</i><span>Copy a single timecode with the clipboard button, or use <strong>Copy All</strong> to copy every break at once as a list ready to paste into your edit system.</span></li>
+                </ul>
+
+                <hr class="help-divider">
+                <p class="help-section-title">Reading the Timeline</p>
+                <ul>
+                    <li><i class="help-icon" style="color:var(--accent-green)">■</i><span><strong>Green</strong> gap means spacing is valid (6 to 10 minutes). Click any marker to scroll to that break.</span></li>
+                    <li><i class="help-icon" style="color:var(--accent-red)">■</i><span><strong>Red</strong> gap means spacing is too short (under 6 min), too long (over 10 min), or the break falls inside the 3-minute end buffer.</span></li>
+                    <li><i class="help-icon" style="color:var(--accent-yellow)">■</i><span><strong>Yellow line</strong> marks the 3-minute end boundary. No break should be placed past this point.</span></li>
+                </ul>
+            </div>
+        </div>
 
         <!-- Controls Section -->
         <div class="controls-section">
-            <div class="input-group">
-                <label>
+            <div class="controls-row-primary">
+                <label class="label-duration">
                     Show Duration
                     <input type="text" id="endTime" placeholder="01:00:00;00" value="01:00:00;00">
                     <span class="timecode-hint">HH:MM:SS;FF</span>
                 </label>
-                <label>
+                <label class="label-strategy">
                     Strategy
                     <select id="strategySelect">
                         <option value="redistribute">Redistribute</option>
@@ -557,10 +887,12 @@
                     </select>
                     <span class="strategy-hint" id="strategyHint">Space breaks evenly across the show</span>
                 </label>
-                <button onclick="autoSuggest()" title="Auto-place breaks using the selected strategy">Auto-Suggest</button>
-                <button id="undoBtn" onclick="undo()" title="Undo last change">↶ Undo</button>
-                <button id="redoBtn" onclick="redo()" title="Redo last change">↷ Redo</button>
-                <button onclick="resetCalculator()" title="Clear all breaks and reset duration">Reset</button>
+                <button class="btn-calculate" onclick="autoSuggest()" title="Auto-place breaks using the selected strategy">Calculate Breaks</button>
+            </div>
+            <div class="controls-row-secondary">
+                <button class="btn-secondary" id="undoBtn" onclick="undo()" title="Undo last change">↶ Undo</button>
+                <button class="btn-secondary" id="redoBtn" onclick="redo()" title="Redo last change">↷ Redo</button>
+                <button class="btn-danger" onclick="resetCalculator()" title="Clear all breaks and reset duration">Reset</button>
             </div>
         </div>
 
@@ -578,10 +910,13 @@
         <!-- Ad Breaks -->
         <div class="breaks-section">
             <div class="breaks-header">
-                <span>Ad Breaks</span>
-                <div style="display:flex;gap:0.5rem;align-items:center;">
-                    <button onclick="exportCSV()" style="font-size:0.75rem;padding:0.3rem 0.75rem;" title="Download all break timecodes as CSV">Export CSV</button>
-                    <span id="allValidStatus" class="status-badge valid" style="padding: 0.3rem 0.6rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; background: rgba(74, 222, 128, 0.2); color: var(--accent-green);">All Valid</span>
+                <div class="breaks-header-row1">
+                    <span class="breaks-header-title">Ad Breaks</span>
+                    <span id="allValidStatus" class="status-pill valid">All Valid</span>
+                </div>
+                <div class="breaks-header-row2">
+                    <button class="breaks-action-btn" onclick="copyAllTimecodes()" title="Copy all placed timecodes to clipboard">Copy All</button>
+                    <button class="breaks-action-btn" onclick="exportCSV()" title="Download all break timecodes as CSV">Export CSV</button>
                 </div>
             </div>
             <div class="breaks-grid" id="breaksGrid"></div>
@@ -643,7 +978,10 @@
         }
 
         function maskTimecodeInput(el) {
-            // Live mask as user types: left-to-right formatting
+            // Only reformat when cursor is at the end (user typing forward).
+            // If cursor is in the middle the user is editing in place — leave it alone
+            // so backspace/insert in the middle doesn't scramble the timecode.
+            if (el.selectionStart !== el.value.length) return;
             const raw = el.value.replace(/\D/g, '').slice(0, 8);
             let formatted = raw.slice(0, 2);
             if (raw.length > 2) formatted += ':' + raw.slice(2, 4);
@@ -1051,11 +1389,18 @@
                 const card = document.createElement('div');
                 card.className = `break-card ${br.valid ? 'valid' : 'invalid'}`;
                 const timecodeDisplay = br.seconds > 0 ? framesToTimecode(br.frames) : '—';
-                const spacingDisplay = br.spacing > 0 ? secondsToTimecode(br.spacing) : '—';
+                const spacingDisplay = br.spacing > 0 ? secondsToShort(br.spacing) : '—';
 
-                const gapLabel = i === 0
-                    ? (br.seconds > 0 ? `+${secondsToShort(br.seconds)} from start` : '')
-                    : (br.spacing > 0 ? `+${secondsToShort(br.spacing)} from Break ${i}` : '');
+                let gapLabel = '';
+                if (i === 0) {
+                    gapLabel = br.seconds > 0 ? `+${secondsToShort(br.seconds)} from start` : '';
+                } else if (br.spacing > 0) {
+                    gapLabel = `+${secondsToShort(br.spacing)} from Break ${i}`;
+                    if (i === NUM_BREAKS - 1 && br.seconds > 0) {
+                        const toEnd = endSeconds - br.seconds;
+                        gapLabel += ` · ${secondsToShort(toEnd)} to end`;
+                    }
+                }
 
                 card.innerHTML = `
                     <div class="break-header">
@@ -1066,9 +1411,10 @@
                                 ${br.locked ? '🔒' : '🔓'}
                             </button>
                         </div>
-                        <div class="spacing-badge ${!br.spacingValid && br.seconds > 0 && br.spacing > 0 ? 'invalid' : ''}">
-                            ${br.seconds > 0 && br.spacing > 0 ? `${br.spacingValid ? '✓' : '✗'} ${spacingDisplay}` : (br.seconds > 0 && i === 0 ? '—' : '—')}
-                        </div>
+                        ${br.seconds > 0 && br.spacing > 0 ? `
+                        <div class="spacing-badge ${br.spacingValid ? '' : 'invalid'}">
+                            ${br.spacingValid ? '✓' : '✗'} ${spacingDisplay}
+                        </div>` : ''}
                     </div>
 
                     <div class="break-input-row">
@@ -1077,17 +1423,29 @@
                                    oninput="maskTimecodeInput(this)"
                                    onchange="if(this.value && this.value !== '—') { normalizeTimecodeInput(this); updateBreak(${i}, this.value); } else this.value = '${timecodeDisplay}';">
                         </div>
-                        <button class="copy-btn" onclick="copyTimecode(${i})" title="Copy timecode to clipboard">📋</button>
+                        <button class="copy-btn" onclick="copyTimecode(${i})" title="Copy timecode to clipboard">Copy</button>
                     </div>
-                    ${gapLabel ? `<div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.2rem;font-family:'Courier New',monospace;">${gapLabel}</div>` : ''}
+                    ${gapLabel ? `<div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.2rem;">${gapLabel}</div>` : ''}
                 `;
 
                 breaksGrid.appendChild(card);
             });
 
-            document.getElementById('allValidStatus').style.background = allValid ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255, 107, 107, 0.2)';
-            document.getElementById('allValidStatus').style.color = allValid ? 'var(--accent-green)' : 'var(--accent-red)';
-            document.getElementById('allValidStatus').textContent = allValid ? 'All Valid' : 'Issues Found';
+            const statusEl = document.getElementById('allValidStatus');
+            statusEl.className = `status-pill ${allValid ? 'valid' : 'invalid'}`;
+            statusEl.textContent = allValid ? 'All Valid' : 'Issues';
+        }
+
+        function copyAllTimecodes() {
+            const placed = breaks.filter(b => b.seconds > 0);
+            if (placed.length === 0) { alert('No breaks placed yet.'); return; }
+            const lines = placed.map((b, i) => framesToTimecode(b.frames));
+            navigator.clipboard.writeText(lines.join('\n')).then(() => {
+                const btn = document.querySelector('[onclick="copyAllTimecodes()"]');
+                const orig = btn.textContent;
+                btn.textContent = '✓ Copied';
+                setTimeout(() => btn.textContent = orig, 1500);
+            }).catch(() => alert(lines.join('\n')));
         }
 
         function exportCSV() {
@@ -1128,6 +1486,14 @@
         };
         document.getElementById('strategySelect').addEventListener('change', (e) => {
             document.getElementById('strategyHint').textContent = strategyHints[e.target.value];
+        });
+
+        document.getElementById('endTime').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('endTime').blur(); // trigger normalise
+                autoSuggest();
+            }
         });
 
         document.addEventListener('keydown', (e) => {
