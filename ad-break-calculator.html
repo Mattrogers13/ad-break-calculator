@@ -677,6 +677,37 @@
             background: #22c55e;
         }
 
+        /* Floating tooltips */
+        [data-tooltip] {
+            position: relative;
+        }
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 7px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0d1230;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.68rem;
+            white-space: nowrap;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.15s;
+            z-index: 50;
+            font-weight: 400;
+            letter-spacing: normal;
+            text-transform: none;
+        }
+        [data-tooltip]:hover::after {
+            visibility: visible;
+            opacity: 1;
+        }
+
         /* Mobile Responsive */
         @media (max-width: 640px) {
             body {
@@ -830,7 +861,7 @@
             <div class="header-inner">
                 <h1>Ad Break Calculator</h1>
                 <span class="header-subtitle">29.97fps drop-frame &middot; 5 breaks &middot; 6&ndash;10 min spacing</span>
-                <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')" title="Help">?</button>
+                <button class="help-btn" onclick="document.getElementById('helpOverlay').classList.add('open')" data-tooltip="Help &amp; instructions">?</button>
             </div>
         </header>
 
@@ -857,7 +888,7 @@
                 <ul>
                     <li><i class="help-icon">✏️</i><span>Click any timecode to edit it directly. Bare digit entry works here too.</span></li>
                     <li><i class="help-icon">🔒</i><span><strong>Lock</strong> a break to pin it in place. Locked breaks are skipped during recalculation, so you can anchor one position and freely adjust everything else around it.</span></li>
-                    <li><i class="help-icon">📋</i><span>Copy a single timecode with the clipboard button, or use <strong>Copy All</strong> to copy every break at once as a list ready to paste into your edit system.</span></li>
+                    <li><i class="help-icon">⧉</i><span>Copy a single timecode with the <strong>Copy</strong> button, or use <strong>Copy All</strong> to copy every break at once as a list ready to paste into your edit system.</span></li>
                 </ul>
 
                 <hr class="help-divider">
@@ -915,13 +946,15 @@
                     <span id="allValidStatus" class="status-pill valid">All Valid</span>
                 </div>
                 <div class="breaks-header-row2">
-                    <button class="breaks-action-btn" onclick="copyAllTimecodes()" title="Copy all placed timecodes to clipboard">Copy All</button>
-                    <button class="breaks-action-btn" onclick="exportCSV()" title="Download all break timecodes as CSV">Export CSV</button>
+                    <button class="breaks-action-btn" onclick="copyAllTimecodes()" data-tooltip="Copy all timecodes to clipboard">Copy All</button>
+                    <button class="breaks-action-btn" onclick="exportCSV()" data-tooltip="Download breaks as CSV file">Export CSV</button>
                 </div>
             </div>
             <div class="breaks-grid" id="breaksGrid"></div>
         </div>
     </div>
+
+    <footer style="text-align:center; padding: 1rem 0 0.5rem; color: var(--text-secondary); font-size: 0.65rem; opacity: 0.4;">v1.3.0</footer>
 
     <script>
         const NUM_BREAKS = 5;
@@ -1407,7 +1440,7 @@
                         <div class="break-title">
                             <span class="break-number">Break ${i + 1}</span>
                             <button class="lock-btn ${br.locked ? 'locked' : ''}" onclick="toggleLock(${i})"
-                                title="${br.locked ? 'Locked — click to unlock this break position' : 'Unlocked — click to lock this break position'}">
+                                data-tooltip="${br.locked ? 'Locked — click to unlock' : 'Unlocked — click to lock'}">
                                 ${br.locked ? '🔒' : '🔓'}
                             </button>
                         </div>
@@ -1423,7 +1456,7 @@
                                    oninput="maskTimecodeInput(this)"
                                    onchange="if(this.value && this.value !== '—') { normalizeTimecodeInput(this); updateBreak(${i}, this.value); } else this.value = '${timecodeDisplay}';">
                         </div>
-                        <button class="copy-btn" onclick="copyTimecode(${i})" title="Copy timecode to clipboard">Copy</button>
+                        <button class="copy-btn" onclick="copyTimecode(${i})" data-tooltip="Copy timecode to clipboard">⧉</button>
                     </div>
                     ${gapLabel ? `<div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.2rem;">${gapLabel}</div>` : ''}
                 `;
