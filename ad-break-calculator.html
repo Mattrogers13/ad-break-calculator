@@ -1032,7 +1032,8 @@
             });
 
             const validBreaks = validation.filter(v => v.seconds > 0 && v.valid);
-            const placedBreaks = validation.filter(v => v.seconds > 0);
+            // placedBreaks already declared above in gap visualization section
+            // Reuse it here for summary stats
             const avgSpacing = placedBreaks.length > 1
                 ? (endSeconds - LAST_BREAK_BUFFER) / placedBreaks.length
                 : 0;
