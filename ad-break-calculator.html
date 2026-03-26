@@ -1063,12 +1063,25 @@
         }
 
         document.getElementById('endTime').addEventListener('change', () => {
+            // Auto-format to drop-frame timecode
+            const input = document.getElementById('endTime');
+            if (input.value.match(/^\d{2}:\d{2}:\d{2}[:;]\d{2}$/)) {
+                input.value = input.value.replace(':', ';').slice(0, -1) + input.value.slice(-2).replace(':', ';');
+                if (!input.value.includes(';')) {
+                    input.value = input.value.replace(/^(\d{2}:\d{2}:\d{2}):(\d{2})$/, '$1;$2');
+                }
+            }
             saveToHistory();
             render();
         });
-        document.getElementById('endTime').addEventListener('input', () => {
-            // Just allow typing, don't validate until change event
-            // This fixes the input bug where validation was too aggressive
+        document.getElementById('endTime').addEventListener('input', (e) => {
+            // Auto-format as user types - replace colons with semicolons in frame position
+            let val = e.target.value;
+            // Only process if it looks like a timecode
+            if (val.match(/^\d{2}:\d{2}:\d{2}[:;]?\d{0,2}$/)) {
+                val = val.replace(/^(\d{2}:\d{2}:\d{2}):/, '$1;');
+                e.target.value = val;
+            }
         });
 
         document.addEventListener('keydown', (e) => {
