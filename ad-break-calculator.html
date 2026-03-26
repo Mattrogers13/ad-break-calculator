@@ -826,6 +826,19 @@
             });
         }
 
+        function scrollToBreak(index) {
+            const breakCard = document.querySelectorAll('.break-card')[index];
+            if (breakCard) {
+                breakCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                breakCard.style.boxShadow = '0 0 20px rgba(96, 165, 250, 0.5)';
+                setTimeout(() => {
+                    breakCard.style.boxShadow = breakCard.classList.contains('valid')
+                        ? '0 0 12px rgba(74, 222, 128, 0.1)'
+                        : '0 0 12px rgba(255, 107, 107, 0.1)';
+                }, 2000);
+            }
+        }
+
         function resetCalculator() {
             saveToHistory();
             breaks = Array(NUM_BREAKS).fill(null).map(() => ({
@@ -893,6 +906,8 @@
                     const marker = document.createElement('div');
                     marker.className = `timeline-marker active ${br.valid ? 'valid' : 'invalid'}`;
                     marker.style.left = `${percent}%`;
+                    marker.style.cursor = 'pointer';
+                    marker.onclick = () => scrollToBreak(i);
                     timeline.appendChild(marker);
                     const label = document.createElement('div');
                     label.className = 'timeline-label';
@@ -901,6 +916,79 @@
                     timeline.appendChild(label);
                 }
             });
+
+            // Add gap visualization
+            const placedBreaks = validation.filter(v => v.seconds > 0);
+            if (placedBreaks.length > 0) {
+                // Create a style for gaps if not already there
+                if (!document.getElementById('timeline-gap-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'timeline-gap-styles';
+                    style.textContent = `.timeline-gap {
+                        position: absolute;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 0.6rem;
+                        color: var(--text-secondary);
+                        opacity: 0.7;
+                        pointer-events: none;
+                    }
+                    .timeline-gap.valid {
+                        background: rgba(74, 222, 128, 0.15);
+                    }
+                    .timeline-gap.invalid {
+                        background: rgba(255, 107, 107, 0.15);
+                    }`;
+                    document.head.appendChild(style);
+                }
+
+                // Gap from start to first break
+                const firstBreak = placedBreaks[0];
+                const gap0 = firstBreak.seconds;
+                const gap0Valid = gap0 >= MIN_SPACING && gap0 <= MAX_SPACING;
+                const gap0Width = (gap0 / endSeconds) * 100;
+                const gap0_el = document.createElement('div');
+                gap0_el.className = `timeline-gap ${gap0Valid ? 'valid' : 'invalid'}`;
+                gap0_el.style.left = '0%';
+                gap0_el.style.width = `${gap0Width}%`;
+                gap0_el.title = secondsToTimecode(gap0);
+                gap0_el.textContent = secondsToTimecode(gap0);
+                timeline.insertBefore(gap0_el, timeline.firstChild);
+
+                // Gaps between breaks
+                for (let i = 1; i < placedBreaks.length; i++) {
+                    const prevBreak = placedBreaks[i - 1];
+                    const currentBreak = placedBreaks[i];
+                    const gap = currentBreak.seconds - prevBreak.seconds;
+                    const gapValid = gap >= MIN_SPACING && gap <= MAX_SPACING;
+                    const gapPercent = (prevBreak.seconds / endSeconds) * 100;
+                    const gapWidth = ((currentBreak.seconds - prevBreak.seconds) / endSeconds) * 100;
+                    const gap_el = document.createElement('div');
+                    gap_el.className = `timeline-gap ${gapValid ? 'valid' : 'invalid'}`;
+                    gap_el.style.left = `${gapPercent}%`;
+                    gap_el.style.width = `${gapWidth}%`;
+                    gap_el.title = secondsToTimecode(gap);
+                    gap_el.textContent = secondsToTimecode(gap);
+                    timeline.insertBefore(gap_el, timeline.firstChild);
+                }
+
+                // Gap after last break (to 3 min boundary)
+                const lastBreak = placedBreaks[placedBreaks.length - 1];
+                const lastBoundary = endSeconds - LAST_BREAK_BUFFER;
+                const gapLast = lastBoundary - lastBreak.seconds;
+                const gapLastValid = gapLast >= LAST_BREAK_BUFFER;
+                const lastGapPercent = (lastBreak.seconds / endSeconds) * 100;
+                const lastGapWidth = (gapLast / endSeconds) * 100;
+                const last_gap_el = document.createElement('div');
+                last_gap_el.className = `timeline-gap ${gapLastValid ? 'valid' : 'invalid'}`;
+                last_gap_el.style.left = `${lastGapPercent}%`;
+                last_gap_el.style.width = `${lastGapWidth}%`;
+                last_gap_el.title = secondsToTimecode(gapLast);
+                last_gap_el.textContent = secondsToTimecode(gapLast);
+                timeline.insertBefore(last_gap_el, timeline.firstChild);
+            }
 
             const lastBoundaryPercent = ((endSeconds - LAST_BREAK_BUFFER) / endSeconds) * 100;
             const boundaryMarker = document.createElement('div');
@@ -978,7 +1066,10 @@
             saveToHistory();
             render();
         });
-        document.getElementById('endTime').addEventListener('input', render);
+        document.getElementById('endTime').addEventListener('input', () => {
+            // Just allow typing, don't validate until change event
+            // This fixes the input bug where validation was too aggressive
+        });
 
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
