@@ -624,6 +624,28 @@
             document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
         }
 
+        function maskTimecodeInput(el) {
+            // Live mask as user types: left-to-right formatting
+            const raw = el.value.replace(/\D/g, '').slice(0, 8);
+            let formatted = raw.slice(0, 2);
+            if (raw.length > 2) formatted += ':' + raw.slice(2, 4);
+            if (raw.length > 4) formatted += ':' + raw.slice(4, 6);
+            if (raw.length > 6) formatted += ';' + raw.slice(6, 8);
+            el.value = formatted;
+        }
+
+        function normalizeTimecodeInput(el) {
+            // On commit (blur/change): left-pad digits to 8 so "451225" → "00:45:12;25"
+            const raw = el.value.replace(/\D/g, '').padStart(8, '0').slice(-8);
+            el.value = raw.slice(0, 2) + ':' + raw.slice(2, 4) + ':' + raw.slice(4, 6) + ';' + raw.slice(6, 8);
+        }
+
+        function secondsToShort(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return s === 0 ? `${m}m` : `${m}:${String(s).padStart(2, '0')}`;
+        }
+
         function timecodeToFrames(timecodeStr) {
             const match = timecodeStr.match(/^(\d{2}):(\d{2}):(\d{2})[;:](\d{2})$/);
             if (!match) return 0;
@@ -899,7 +921,7 @@
                 `00:00:00;00 — ${secondsToTimecode(endSeconds)}`;
 
             const timeline = document.getElementById('timeline');
-            timeline.querySelectorAll('.timeline-marker, .timeline-label').forEach(el => el.remove());
+            timeline.querySelectorAll('.timeline-marker, .timeline-label, .timeline-gap').forEach(el => el.remove());
 
             validation.forEach((br, i) => {
                 if (br.seconds > 0) {
@@ -933,14 +955,20 @@
                         justify-content: center;
                         font-size: 0.6rem;
                         color: var(--text-secondary);
-                        opacity: 0.7;
+                        opacity: 0.8;
                         pointer-events: none;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        font-family: 'Courier New', monospace;
+                        font-weight: 600;
                     }
                     .timeline-gap.valid {
                         background: rgba(74, 222, 128, 0.15);
+                        color: var(--accent-green);
                     }
                     .timeline-gap.invalid {
                         background: rgba(255, 107, 107, 0.15);
+                        color: var(--accent-red);
                     }`;
                     document.head.appendChild(style);
                 }
@@ -954,8 +982,9 @@
                 gap0_el.className = `timeline-gap ${gap0Valid ? 'valid' : 'invalid'}`;
                 gap0_el.style.left = '0%';
                 gap0_el.style.width = `${gap0Width}%`;
+                const MIN_LABEL_PCT = 7; // hide label text below this % width
                 gap0_el.title = secondsToTimecode(gap0);
-                gap0_el.textContent = secondsToTimecode(gap0);
+                if (gap0Width >= MIN_LABEL_PCT) gap0_el.textContent = secondsToShort(gap0);
                 timeline.insertBefore(gap0_el, timeline.firstChild);
 
                 // Gaps between breaks
@@ -971,7 +1000,7 @@
                     gap_el.style.left = `${gapPercent}%`;
                     gap_el.style.width = `${gapWidth}%`;
                     gap_el.title = secondsToTimecode(gap);
-                    gap_el.textContent = secondsToTimecode(gap);
+                    if (gapWidth >= MIN_LABEL_PCT) gap_el.textContent = secondsToShort(gap);
                     timeline.insertBefore(gap_el, timeline.firstChild);
                 }
 
@@ -987,7 +1016,7 @@
                 last_gap_el.style.left = `${lastGapPercent}%`;
                 last_gap_el.style.width = `${lastGapWidth}%`;
                 last_gap_el.title = secondsToTimecode(gapLast);
-                last_gap_el.textContent = secondsToTimecode(gapLast);
+                if (lastGapWidth >= MIN_LABEL_PCT) last_gap_el.textContent = secondsToShort(gapLast);
                 timeline.insertBefore(last_gap_el, timeline.firstChild);
             }
 
@@ -1023,7 +1052,8 @@
                         <div class="break-input">
                             <label>Timecode</label>
                             <input type="text" placeholder="HH:MM:SS;FF" value="${timecodeDisplay}"
-                                   onchange="if(this.value !== '—') updateBreak(${i}, this.value); else this.value = '${timecodeDisplay}';">
+                                   oninput="maskTimecodeInput(this)"
+                                   onchange="if(this.value && this.value !== '—') { normalizeTimecodeInput(this); updateBreak(${i}, this.value); } else this.value = '${timecodeDisplay}';">
                         </div>
                         <button class="copy-btn" onclick="copyTimecode(${i})">📋</button>
                     </div>
@@ -1063,25 +1093,13 @@
         }
 
         document.getElementById('endTime').addEventListener('change', () => {
-            // Auto-format to drop-frame timecode
             const input = document.getElementById('endTime');
-            if (input.value.match(/^\d{2}:\d{2}:\d{2}[:;]\d{2}$/)) {
-                input.value = input.value.replace(':', ';').slice(0, -1) + input.value.slice(-2).replace(':', ';');
-                if (!input.value.includes(';')) {
-                    input.value = input.value.replace(/^(\d{2}:\d{2}:\d{2}):(\d{2})$/, '$1;$2');
-                }
-            }
+            normalizeTimecodeInput(input);
             saveToHistory();
             render();
         });
         document.getElementById('endTime').addEventListener('input', (e) => {
-            // Auto-format as user types - replace colons with semicolons in frame position
-            let val = e.target.value;
-            // Only process if it looks like a timecode
-            if (val.match(/^\d{2}:\d{2}:\d{2}[:;]?\d{0,2}$/)) {
-                val = val.replace(/^(\d{2}:\d{2}:\d{2}):/, '$1;');
-                e.target.value = val;
-            }
+            maskTimecodeInput(e.target);
         });
 
         document.addEventListener('keydown', (e) => {
